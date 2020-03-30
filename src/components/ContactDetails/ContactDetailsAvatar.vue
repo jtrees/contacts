@@ -25,6 +25,7 @@
 	<div class="contact-header-avatar">
 		<div class="contact-header-avatar__wrapper">
 			<div class="contact-header-avatar__background" @click="toggleModal" />
+
 			<div v-if="contact.photo"
 				:style="{ 'backgroundImage': `url(${contact.photoUrl})` }"
 				class="contact-header-avatar__photo"
@@ -80,6 +81,9 @@
 				<ActionButton v-if="!isReadOnly" icon="icon-picture" @click="selectFilePicker">
 					{{ t('contacts', 'Choose from files') }}
 				</ActionButton>
+				<ActionButton v-if="!isReadOnly && hasSocialId" icon="icon-link" @click="selectSocialAvatar">
+					{{ t('contacts', 'Update from social media') }}
+				</ActionButton>
 			</Actions>
 		</div>
 	</div>
@@ -124,6 +128,7 @@ export default {
 			root: generateRemoteUrl(`dav/files/${getCurrentUser().uid}`),
 			width: 0,
 			height: 0,
+			facebookid: 0,
 		}
 	},
 	computed: {
@@ -131,6 +136,12 @@ export default {
 			if (this.contact.addressbook) {
 				return this.contact.addressbook.readOnly
 			}
+			return false
+		},
+		hasSocialId() {
+			const jCal = this.contact.jCal
+			const socialId = jCal[1].filter(props => props[0] === 'x-socialprofile')
+			if (socialId.length > 0) { return true }
 			return false
 		},
 	},
@@ -327,6 +338,36 @@ export default {
 						this.loading = false
 					}
 				}
+			}
+		},
+
+		/**
+		 * WebImage handlers
+		 */
+		async selectSocialAvatar() {
+
+			const imageUrl = window.location.href + '/social/avatar/'
+
+			if (!this.loading) {
+
+				this.loading = true
+				try {
+					const { get } = await axios()
+					const response = await get(`${imageUrl}`, {
+						responseType: 'arraybuffer',
+					})
+					const type = response.headers['content-type']
+					if (response.status !== 200) throw new URIError('verify social profile id')
+					const data = Buffer.from(response.data, 'binary').toString('base64')
+					this.setPhoto(data, type)
+				} catch (error) {
+					OC.Notification.showTemporary(t('contacts', 'Error while processing the picture.'))
+					console.error(error)
+					this.loading = false
+				}
+
+			} else {
+				OC.Notification.showTemporary(t('contacts', 'Social avatar download failed'))
 			}
 		},
 

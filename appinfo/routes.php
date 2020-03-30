@@ -25,6 +25,8 @@ return [
 	'routes' => [
 		['name' => 'page#index', 'url' => '/', 'verb' => 'GET'],
 		['name' => 'page#index', 'url' => '/{group}', 'verb' => 'GET', 'postfix' => 'group'],
-		['name' => 'page#index', 'url' => '/{group}/{contact}', 'verb' => 'GET', 'postfix' => 'group.contact']
+		['name' => 'page#index', 'url' => '/{group}/{contact}', 'verb' => 'GET', 'postfix' => 'group.contact'],
+		['name' => 'api#social', 'url' => '/{group}/{contact}/social/{type}/', 'verb' => 'GET'],
+		['name' => 'api#social', 'url' => '/{group}/{contact}/socialx/{type}/', 'verb' => 'GET', 'postfix' => 'group.contact']
 	]
 ];
