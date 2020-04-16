@@ -97,11 +97,11 @@ import ActionButton from '@nextcloud/vue/dist/Components/ActionButton'
 import Modal from '@nextcloud/vue/dist/Components/Modal'
 
 import { getFilePickerBuilder } from '@nextcloud/dialogs'
-import { generateRemoteUrl } from '@nextcloud/router'
+import { generateUrl, generateRemoteUrl } from '@nextcloud/router'
 import { getCurrentUser } from '@nextcloud/auth'
 import sanitizeSVG from '@mattkrick/sanitize-svg'
 
-const axios = () => import('axios')
+import axios from '@nextcloud/axios'
 
 export default {
 	name: 'ContactDetailsAvatar',
@@ -325,8 +325,8 @@ export default {
 				if (file) {
 					this.loading = true
 					try {
-						const { get } = await axios()
-						const response = await get(`${this.root}${file}`, {
+						// const { get } = await axios()
+						const response = await axios.get(`${this.root}${file}`, {
 							responseType: 'arraybuffer',
 						})
 						const type = response.headers['content-type']
@@ -345,27 +345,33 @@ export default {
 		 * WebImage handlers
 		 */
 		async selectSocialAvatar() {
-
-			const imageUrl = window.location.href + '/social/avatar/'
+			const apiUrl = generateUrl('apps/contacts/api/v1/social/')
+			const addressbookId = this.contact.addressbook.id
+			const contactId = this.contact.uid
+			const imageUrl = apiUrl + 'avatar/' + addressbookId + '/' + contactId
 
 			if (!this.loading) {
 
 				this.loading = true
 				try {
-					const { get } = await axios()
-					const response = await get(`${imageUrl}`, {
+					const response = await axios.get(`${imageUrl}`, {
 						responseType: 'arraybuffer',
 					})
-					const type = response.headers['content-type']
-					if (response.status !== 200) throw new URIError('verify social profile id')
-					const data = Buffer.from(response.data, 'binary').toString('base64')
-					this.setPhoto(data, type)
+					if (response.status !== 200) { throw new URIError('verify social profile id') }
+					OC.Notification.showTemporary(t('contacts', 'Image updated.'))
+					// refresh view
+					// FIXME: not working
+					const key = contactId + '~' + addressbookId
+					const updated = this.$store.getters.getContact(key)
+					this.$store.dispatch('fetchFullContact', { contact: updated })
+					this.$emit('updateLocalContact', updated)
+
 				} catch (error) {
 					OC.Notification.showTemporary(t('contacts', 'Error while processing the picture.'))
 					console.error(error)
+				} finally {
 					this.loading = false
 				}
-
 			} else {
 				OC.Notification.showTemporary(t('contacts', 'Social avatar download failed'))
 			}
