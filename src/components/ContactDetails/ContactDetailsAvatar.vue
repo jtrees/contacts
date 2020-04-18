@@ -3,6 +3,7 @@
   -
   - @author Team Popcorn <teampopcornberlin@gmail.com>
   - @author John Molakvoæ <skjnldsv@protonmail.com>
+  - @author Matthias Heinisch <nextcloud@matthiasheinisch.de>
   -
   - @license GNU AGPL version 3 or any later version
   -
@@ -81,8 +82,8 @@
 				<ActionButton v-if="!isReadOnly" icon="icon-picture" @click="selectFilePicker">
 					{{ t('contacts', 'Choose from files') }}
 				</ActionButton>
-				<ActionButton v-if="!isReadOnly && hasSocialId" icon="icon-link" @click="selectSocialAvatar">
-					{{ t('contacts', 'Update from social media') }}
+				<ActionButton v-if="!isReadOnly && hasSocialId" icon="icon-link" @click="getSocialAvatar">
+					{{ t('contacts', 'Get from social media') }}
 				</ActionButton>
 			</Actions>
 		</div>
@@ -99,9 +100,12 @@ import Modal from '@nextcloud/vue/dist/Components/Modal'
 import { getFilePickerBuilder } from '@nextcloud/dialogs'
 import { generateUrl, generateRemoteUrl } from '@nextcloud/router'
 import { getCurrentUser } from '@nextcloud/auth'
+import { loadState } from '@nextcloud/initial-state'
 import sanitizeSVG from '@mattkrick/sanitize-svg'
 
 import axios from '@nextcloud/axios'
+
+const supportedNetworks = loadState('contacts', 'supportedNetworks')
 
 export default {
 	name: 'ContactDetailsAvatar',
@@ -128,7 +132,6 @@ export default {
 			root: generateRemoteUrl(`dav/files/${getCurrentUser().uid}`),
 			width: 0,
 			height: 0,
-			facebookid: 0,
 		}
 	},
 	computed: {
@@ -139,10 +142,10 @@ export default {
 			return false
 		},
 		hasSocialId() {
-			const jCal = this.contact.jCal
-			const socialId = jCal[1].filter(props => props[0] === 'x-socialprofile')
-			if (socialId.length > 0) { return true }
-			return false
+			const networks = this.contact.vCard.getAllProperties('x-socialprofile')
+				.filter(prop => supportedNetworks['avatar']
+					.includes((prop.getParameter('type')).toString().toLowerCase()))
+			return (networks.length > 0)
 		},
 	},
 	mounted() {
@@ -325,7 +328,6 @@ export default {
 				if (file) {
 					this.loading = true
 					try {
-						// const { get } = await axios()
 						const response = await axios.get(`${this.root}${file}`, {
 							responseType: 'arraybuffer',
 						})
@@ -342,39 +344,41 @@ export default {
 		},
 
 		/**
-		 * WebImage handlers
+		 * Downloads the Avatar from social media
 		 */
-		async selectSocialAvatar() {
-			const apiUrl = generateUrl('apps/contacts/api/v1/social/')
-			const addressbookId = this.contact.addressbook.id
-			const contactId = this.contact.uid
-			const imageUrl = apiUrl + 'avatar/' + addressbookId + '/' + contactId
-
+		async getSocialAvatar() {
 			if (!this.loading) {
 
 				this.loading = true
 				try {
-					const response = await axios.get(`${imageUrl}`, {
-						responseType: 'arraybuffer',
-					})
-					if (response.status !== 200) { throw new URIError('verify social profile id') }
-					OC.Notification.showTemporary(t('contacts', 'Image updated.'))
-					// refresh view
-					// FIXME: not working
-					const key = contactId + '~' + addressbookId
-					const updated = this.$store.getters.getContact(key)
-					this.$store.dispatch('fetchFullContact', { contact: updated })
-					this.$emit('updateLocalContact', updated)
+					const response = await axios.get(generateUrl('/apps/contacts/api/v1/social/avatar/{id}/{uid}', {
+						id: this.contact.addressbook.id,
+						uid: this.contact.uid,
+					}))
+					if (response.status !== 200) {
+						throw new URIError('Download of social profile avatar failed')
+					}
 
+					// Fetch newly updated contact
+					this.contact.dav._isPartial = true
+					await this.$store.dispatch('fetchFullContact', { contact: this.contact })
+
+					// Update local clone
+					const contact = this.$store.getters.getContact(this.contact.key)
+					await this.$emit('updateLocalContact', contact)
+
+					// Notify user
+					OC.Notification.showTemporary(t('contacts', 'Avatar downloaded from social network'))
 				} catch (error) {
-					OC.Notification.showTemporary(t('contacts', 'Error while processing the picture.'))
-					console.error(error)
-				} finally {
-					this.loading = false
+					if (error.response.status === 304) {
+						OC.Notification.showTemporary(t('contacts', 'Avatar already up to date'))
+					} else {
+						OC.Notification.showTemporary(t('contacts', 'Avatar download failed'))
+						console.debug(error)
+					}
 				}
-			} else {
-				OC.Notification.showTemporary(t('contacts', 'Social avatar download failed'))
 			}
+			this.loading = false
 		},
 
 		/**

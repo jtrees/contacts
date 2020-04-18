@@ -30,6 +30,7 @@ use OCP\IConfig;
 use OCP\IRequest;
 use OCP\L10N\IFactory;
 use OCP\Util;
+use OCA\Contacts\Controller\SocialApiController;
 
 class PageController extends Controller {
 	protected $appName;
@@ -65,10 +66,12 @@ class PageController extends Controller {
 	public function index(): TemplateResponse {
 		$locales = $this->languageFactory->findAvailableLocales();
 		$defaultProfile = $this->config->getAppValue($this->appName, 'defaultProfile', 'HOME');
+		$supportedNetworks = SocialApiController::getSupportedNetworks('all');
 
 		$this->initialStateService->provideInitialState($this->appName, 'locales', $locales);
 		$this->initialStateService->provideInitialState($this->appName, 'defaultProfile', $defaultProfile);
-		
+		$this->initialStateService->provideInitialState($this->appName, 'supportedNetworks', $supportedNetworks);
+
 		Util::addScript($this->appName, 'contacts');
 		Util::addStyle($this->appName, 'contacts');
 
