@@ -29,13 +29,19 @@ use PHPUnit\Framework\MockObject\MockObject;
 use OCP\IInitialStateService;
 use OCP\IRequest;
 use OCP\L10N\IFactory;
+use OCA\Contacts\Service\SocialApiService;
 use ChristophWurst\Nextcloud\Testing\TestCase;
 
+
 class PageControllerTest extends TestCase {
+
 	private $controller;
 
 	/** @var IRequest|MockObject */
 	private $request;
+
+	/** @var IConfig|MockObject*/
+	private  $config;
 
 	/** @var IInitialStateService|MockObject */
 	private $initialStateService;
@@ -43,25 +49,25 @@ class PageControllerTest extends TestCase {
 	/** @var IFactory|MockObject */
 	private $languageFactory;
 
-	/** @var IConfig|MockObject*/
-	private $config;
-
+	/** @var SocialApiService|MockObject*/
+	private  $socialApi;
 
 	public function setUp() {
 		parent::setUp();
 
 		$this->request = $this->createMock(IRequest::class);
+		$this->config = $this->createMock(IConfig::class);
 		$this->initialStateService = $this->createMock(IInitialStateService::class);
 		$this->languageFactory = $this->createMock(IFactory::class);
-		$this->config = $this->createMock(IConfig::class);
+		$this->socialApi = $this->createMock(SocialApiService::class);
 
 		$this->controller = new PageController(
 			'contacts',
 			$this->request,
 			$this->config,
 			$this->initialStateService,
-			$this->languageFactory
-
+			$this->languageFactory,
+			$this->socialApi
 		);
 	}
 

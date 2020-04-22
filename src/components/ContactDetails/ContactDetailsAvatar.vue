@@ -75,15 +75,19 @@
 			</Modal>
 
 			<!-- out of the avatar__options because of the overflow hidden -->
-			<Actions :open="opened" class="contact-avatar-options__popovermenu">
-				<ActionButton v-if="!isReadOnly" icon="icon-upload" @click="selectFileInput">
+			<Actions v-if="!isReadOnly" :open="opened" class="contact-avatar-options__popovermenu">
+				<ActionButton icon="icon-upload" @click="selectFileInput">
 					{{ t('contacts', 'Upload a new picture') }}
 				</ActionButton>
-				<ActionButton v-if="!isReadOnly" icon="icon-picture" @click="selectFilePicker">
+				<ActionButton icon="icon-picture" @click="selectFilePicker">
 					{{ t('contacts', 'Choose from files') }}
 				</ActionButton>
-				<ActionButton v-if="!isReadOnly && hasSocialId" icon="icon-link" @click="getSocialAvatar">
-					{{ t('contacts', 'Get from social media') }}
+				<ActionButton
+					v-for="network in supportedSocial"
+					:key="network"
+					:icon="'icon-' + network"
+					@click="getSocialAvatar(network)">
+					{{ t('contacts', 'Get from ' + network) }}
 				</ActionButton>
 			</Actions>
 		</div>
@@ -141,11 +145,12 @@ export default {
 			}
 			return false
 		},
-		hasSocialId() {
-			const networks = this.contact.vCard.getAllProperties('x-socialprofile')
-				.filter(prop => supportedNetworks['avatar']
-					.includes((prop.getParameter('type')).toString().toLowerCase()))
-			return (networks.length > 0)
+		supportedSocial() {
+			const available = this.contact.vCard.getAllProperties('x-socialprofile')
+				.map(a => a.jCal[1].type.toString().toLowerCase())
+			const supported = supportedNetworks.map(v => v.toLowerCase())
+			return supported.filter(i => available.includes(i))
+				.map(j => this.capitalize(j))
 		},
 	},
 	mounted() {
@@ -229,7 +234,15 @@ export default {
 			this.$refs.uploadInput.value = ''
 			this.loading = false
 		},
-
+		/**
+		 * Return the word with (only) the first letter capitalized
+		 *
+		 * @param {string} word the word to handle
+		 * @returns {string} the word with the first letter capitalized
+		 */
+		capitalize(word) {
+			return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+		},
 		/**
 		 * Return the mimetype based on the first magix byte
 		 *
@@ -345,13 +358,17 @@ export default {
 
 		/**
 		 * Downloads the Avatar from social media
+		 *
+		 * @param {String} network the social network to use (or 'any' for first match)
 		 */
-		async getSocialAvatar() {
+		async getSocialAvatar(network) {
+
 			if (!this.loading) {
 
 				this.loading = true
 				try {
-					const response = await axios.get(generateUrl('/apps/contacts/api/v1/social/avatar/{id}/{uid}', {
+					const response = await axios.get(generateUrl('/apps/contacts/api/v1/social/avatar/{network}/{id}/{uid}', {
+						network: network.toLowerCase(),
 						id: this.contact.addressbook.id,
 						uid: this.contact.uid,
 					}))
@@ -360,8 +377,7 @@ export default {
 					}
 
 					// Fetch newly updated contact
-					this.contact.dav._isPartial = true
-					await this.$store.dispatch('fetchFullContact', { contact: this.contact })
+					await this.$store.dispatch('fetchFullContact', { contact: this.contact, forceReFetch: true })
 
 					// Update local clone
 					const contact = this.$store.getters.getContact(this.contact.key)
