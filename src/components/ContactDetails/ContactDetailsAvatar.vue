@@ -85,7 +85,7 @@
 				<ActionButton
 					v-for="network in supportedSocial"
 					:key="network"
-					:icon="'icon-' + network"
+					:icon="'icon-' + network.toLowerCase()"
 					@click="getSocialAvatar(network)">
 					{{ t('contacts', 'Get from ' + network) }}
 				</ActionButton>
@@ -146,9 +146,12 @@ export default {
 			return false
 		},
 		supportedSocial() {
+			// get social networks set for the current contact
 			const available = this.contact.vCard.getAllProperties('x-socialprofile')
 				.map(a => a.jCal[1].type.toString().toLowerCase())
+			// get list of social networks that allow for avatar download
 			const supported = supportedNetworks.map(v => v.toLowerCase())
+			// return supported social networks which are set
 			return supported.filter(i => available.includes(i))
 				.map(j => this.capitalize(j))
 		},

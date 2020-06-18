@@ -1,6 +1,6 @@
 <?php
 /**
- * @copyright Copyright (c) 2018 John Molakvoæ <skjnldsv@protonmail.com>
+ * @copyright Copyright (c) 2020 John Molakvoæ <skjnldsv@protonmail.com>
  *
  * @author John Molakvoæ <skjnldsv@protonmail.com>
  *
@@ -20,20 +20,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
-namespace OCA\Contacts\AppInfo;
 
-use OCP\AppFramework\App;
+use OCA\Contacts\AppInfo\Application;
 
-class Application extends App {
-
-	const APP_ID = 'contacts';
-
-	public function __construct() {
-		parent::__construct(self::APP_ID);
-	}
-	
-	public const AVAIL_SETTINGS = [
-		'allowSocialSync' => 'yes',
-	];
-
-}
+$app = \OC::$server->query(Application::class);
