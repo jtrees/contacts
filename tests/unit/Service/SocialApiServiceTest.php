@@ -35,19 +35,17 @@ use OCP\IAddressBook;
 use PHPUnit\Framework\MockObject\MockObject;
 use ChristophWurst\Nextcloud\Testing\TestCase;
 
-
 class SocialApiServiceTest extends TestCase {
-
 	private $service;
 
 	/** @var CompositeSocialProvider */
 	private $socialProvider;
 	/** @var IManager|MockObject */
-	private  $manager;
+	private $manager;
 	/** @var IConfig|MockObject */
-	private  $config;
+	private $config;
 
-	const EXP_CONNECT = [
+	public const EXP_CONNECT = [
 		'facebook-4'		=> 'https://graph.facebook.com/4/picture?width=720',
 		'facebook-zuck'	=> 'https://graph.facebook.com/zuck/picture?width=720',
 		'facebook-nc'		=> 'https://graph.facebook.com/Nextclouders/picture?width=720',
@@ -70,28 +68,28 @@ class SocialApiServiceTest extends TestCase {
 
 	public function socialProfileProvider() {
 		return [
-			'no social profiles'	 	=> ['any', array(), null, new JSONResponse([], Http::STATUS_BAD_REQUEST)],
-			'facebook profile' 		=> ['facebook', [array('type' => 'facebook', 'value' => '4')], self::EXP_CONNECT['facebook-4'], new JSONResponse([], Http::STATUS_OK)],
-			'facebook invalid profile' 	=> ['facebook', [array('type' => 'facebook', 'value' => 'zuck')], self::EXP_CONNECT['facebook-zuck'], new JSONResponse([], Http::STATUS_NOT_FOUND)],
-			'facebook public page' 	=> ['facebook', [array('type' => 'facebook', 'value' => 'Nextclouders')], self::EXP_CONNECT['facebook-nc'], new JSONResponse([], Http::STATUS_OK)],
-			'tumblr profile' 		=> ['tumblr', [array('type' => 'tumblr', 'value' => 'nextcloudperu')], self::EXP_CONNECT['tumblr-nc'], new JSONResponse([], Http::STATUS_OK)],
-			'tumblr invalid profile'	=> ['tumblr', [array('type' => 'tumblr', 'value' => '@nextcloudperu')], self::EXP_CONNECT['tumblr-invalid'], new JSONResponse([], Http::STATUS_NOT_FOUND)],
-			'invalid insta, valid tumblr'	=> ['any', [array('type' => 'instagram', 'value' => '@zuck'), array('type' => 'tumblr', 'value' => 'nextcloudperu')], self::EXP_CONNECT['tumblr-nc'], new JSONResponse([], Http::STATUS_OK)],
-			'invalid fb, valid tumblr'	=> ['any', [array('type' => 'facebook', 'value' => 'zuck'), array('type' => 'tumblr', 'value' => 'nextcloudperu')], self::EXP_CONNECT['facebook-zuck'], new JSONResponse([], Http::STATUS_NOT_FOUND)],
+			'no social profiles'	 	=> ['any', [], null, new JSONResponse([], Http::STATUS_BAD_REQUEST)],
+			'facebook profile' 		=> ['facebook', [['type' => 'facebook', 'value' => '4']], self::EXP_CONNECT['facebook-4'], new JSONResponse([], Http::STATUS_OK)],
+			'facebook invalid profile' 	=> ['facebook', [['type' => 'facebook', 'value' => 'zuck']], self::EXP_CONNECT['facebook-zuck'], new JSONResponse([], Http::STATUS_NOT_FOUND)],
+			'facebook public page' 	=> ['facebook', [['type' => 'facebook', 'value' => 'Nextclouders']], self::EXP_CONNECT['facebook-nc'], new JSONResponse([], Http::STATUS_OK)],
+			'tumblr profile' 		=> ['tumblr', [['type' => 'tumblr', 'value' => 'nextcloudperu']], self::EXP_CONNECT['tumblr-nc'], new JSONResponse([], Http::STATUS_OK)],
+			'tumblr invalid profile'	=> ['tumblr', [['type' => 'tumblr', 'value' => '@nextcloudperu']], self::EXP_CONNECT['tumblr-invalid'], new JSONResponse([], Http::STATUS_NOT_FOUND)],
+			'invalid insta, valid tumblr'	=> ['any', [['type' => 'instagram', 'value' => '@zuck'], ['type' => 'tumblr', 'value' => 'nextcloudperu']], self::EXP_CONNECT['tumblr-nc'], new JSONResponse([], Http::STATUS_OK)],
+			'invalid fb, valid tumblr'	=> ['any', [['type' => 'facebook', 'value' => 'zuck'], ['type' => 'tumblr', 'value' => 'nextcloudperu']], self::EXP_CONNECT['facebook-zuck'], new JSONResponse([], Http::STATUS_NOT_FOUND)],
 		];
 	}
 
-/*
-	public function testSupportedNetworks() {
-		$this->config
-			->method('getAppValue')
-			->willReturn('yes');
-		$result = $this->service->getSupportedNetworks();
-		$this->assertContains('facebook', $result);
-		$this->assertContains('instagram', $result);
-		$this->assertContains('tumblr', $result);
-	}
-*/
+	/*
+		public function testSupportedNetworks() {
+			$this->config
+				->method('getAppValue')
+				->willReturn('yes');
+			$result = $this->service->getSupportedNetworks();
+			$this->assertContains('facebook', $result);
+			$this->assertContains('instagram', $result);
+			$this->assertContains('tumblr', $result);
+		}
+	*/
 	public function testDeactivatedSocial() {
 		$this->config
 			->method('getAppValue')
@@ -107,7 +105,6 @@ class SocialApiServiceTest extends TestCase {
 	 * @dataProvider socialProfileProvider
 	 */
 	public function testUpdateContact($network, $social, $connector, $expected) {
-
 		$contact = [
 			'URI' => '3225c0d5-1bd2-43e5-a08c-4e65eaa406b0',
 			'VERSION' => '4.0',
@@ -120,11 +117,11 @@ class SocialApiServiceTest extends TestCase {
 			->willReturn('contacts');
 		$addressbook
 			->method('search')
-			->willReturn(array($contact));
+			->willReturn([$contact]);
 
 		$this->manager
 			->method('getUserAddressBooks')
-			->willReturn(array($addressbook));
+			->willReturn([$addressbook]);
 
 		$this->socialProvider
 			->method('getSocialConnector')

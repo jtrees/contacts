@@ -24,7 +24,6 @@
 namespace OCA\Contacts\Service\Social;
 
 class MastodonProvider implements ISocialProvider {
-
 	public function __construct() {
 	}
 	
@@ -38,11 +37,10 @@ class MastodonProvider implements ISocialProvider {
 	public function cleanupId(string $candidate):?string {
 		try {
 			if (strpos($candidate, '@') === 0) {
-				$user_server = explode ('@', $candidate);
+				$user_server = explode('@', $candidate);
 				$candidate = 'https://' . $user_server[2] . '/@' . $user_server[1];
 			}
-		}
-		catch (Exception $e) {
+		} catch (Exception $e) {
 			$candidate = null;
 		}
 		return $candidate;
@@ -59,8 +57,8 @@ class MastodonProvider implements ISocialProvider {
 		try {
 			$opts = [
 				"http" => [
-				"method" => "GET",
-				"header" => "User-Agent: Nextcloud Contacts App",
+					"method" => "GET",
+					"header" => "User-Agent: Nextcloud Contacts App",
 				]
 			];
 			$context = stream_context_create($opts);
@@ -73,8 +71,7 @@ class MastodonProvider implements ISocialProvider {
 				return $img->getAttribute("data-original");
 			}
 			return null;
-		}
-		catch (Exception $e) {
+		} catch (Exception $e) {
 			return null;
 		}
 	}

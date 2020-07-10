@@ -24,7 +24,6 @@
 namespace OCA\Contacts\Service\Social;
 
 class TwitterProvider implements ISocialProvider {
-
 	public function __construct() {
 	}
 	
@@ -69,8 +68,8 @@ class TwitterProvider implements ISocialProvider {
 		try {
 			$opts = [
 				"http" => [
-				"method" => "GET",
-				"header" => "User-Agent: Nextcloud Contacts App",
+					"method" => "GET",
+					"header" => "User-Agent: Nextcloud Contacts App",
 				]
 			];
 			$context = stream_context_create($opts);
@@ -88,8 +87,7 @@ class TwitterProvider implements ISocialProvider {
 				}
 			}
 			return null;
-		}
-		catch (Exception $e) {
+		} catch (Exception $e) {
 			return null;
 		}
 	}

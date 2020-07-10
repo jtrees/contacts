@@ -23,21 +23,20 @@
 
 namespace OCA\Contacts\Controller;
 
+use OCA\Contacts\Service\SocialApiService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\TemplateResponse;
-use OCP\IInitialStateService;
 use OCP\IConfig;
+use OCP\IInitialStateService;
 use OCP\IRequest;
 use OCP\L10N\IFactory;
 use OCP\Util;
-use OCA\Contacts\Service\SocialApiService;
 
 class PageController extends Controller {
-
 	protected $appName;
 
 	/** @var IConfig */
-	private  $config;
+	private $config;
 
 	/** @var IInitialStateService */
 	private $initialStateService;
@@ -46,14 +45,14 @@ class PageController extends Controller {
 	private $languageFactory;
 
 	/** @var SocialApiService */
-	private  $socialApiService;
+	private $socialApiService;
 
 	public function __construct(string $appName,
-					IRequest $request,
-					IConfig $config,
-					IInitialStateService $initialStateService,
-					IFactory $languageFactory,
-					SocialApiService $socialApiService) {
+								IRequest $request,
+								IConfig $config,
+								IInitialStateService $initialStateService,
+								IFactory $languageFactory,
+								SocialApiService $socialApiService) {
 		parent::__construct($appName, $request);
 
 		$this->appName = $appName;

@@ -33,21 +33,19 @@ use OCP\IConfig;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
 
-
 class SocialApiService {
 
 	/** @var CompositeSocialProvider */
 	private $socialProvider;
 	/** @var IManager */
-	private  $manager;
+	private $manager;
 	/** @var IConfig */
-	private  $config;
+	private $config;
 
 	public function __construct(
 					CompositeSocialProvider $socialProvider,
 					IManager $manager,
 					IConfig $config) {
-
 		$this->socialProvider = $socialProvider;
 		$this->manager = $manager;
 		$this->config = $config;
@@ -64,7 +62,7 @@ class SocialApiService {
 	public function getSupportedNetworks() : array {
 		$isAdminEnabled = $this->config->getAppValue(Application::APP_ID, 'allowSocialSync', 'yes');
 		if ($isAdminEnabled !== 'yes') {
-			return array();
+			return [];
 		}
 		return $this->socialProvider->getSupportedNetworks();
 	}
@@ -80,7 +78,6 @@ class SocialApiService {
 	 * @returns {String} the image type or null in case of errors
 	 */
 	protected function getImageType(array $header) : ?string {
-
 		$type = null;
 
 		// get image type from headers
@@ -108,7 +105,6 @@ class SocialApiService {
 	 * @param {string} photo the photo as base64 string
 	 */
 	protected function addPhoto(array &$contact, string $imageType, string $photo) {
-
 		$version = $contact['VERSION'];
 
 		if (!empty($contact['PHOTO'])) {
@@ -118,9 +114,7 @@ class SocialApiService {
 		if ($version >= 4.0) {
 			// overwrite photo
 			$contact['PHOTO'] = "data:" . $imageType . ";base64," . $photo;
-		}
-
-		elseif ($version >= 3.0) {
+		} elseif ($version >= 3.0) {
 			// add new photo
 			$imageType = str_replace('image/', '', $imageType);
 			$contact['PHOTO;ENCODING=b;TYPE=' . $imageType . ';VALUE=BINARY'] = $photo;
@@ -143,7 +137,7 @@ class SocialApiService {
 	protected function getAddressBook(string $addressbookId) : ?IAddressBook {
 		$addressBook = null;
 		$addressBooks = $this->manager->getUserAddressBooks();
-		foreach($addressBooks as $ab) {
+		foreach ($addressBooks as $ab) {
 			if ($ab->getUri() === $addressbookId) {
 				$addressBook = $ab;
 			}
@@ -164,7 +158,6 @@ class SocialApiService {
 	 * @returns {JSONResponse} an empty JSONResponse with respective http status code
 	 */
 	public function updateContact(string $addressbookId, string $contactId, string $network) : JSONResponse {
-
 		$url = null;
 
 		try {
@@ -203,7 +196,7 @@ class SocialApiService {
 			}
 
 			// update contact
-			$changes = array();
+			$changes = [];
 			$changes['URI'] = $contact['URI'];
 			$changes['VERSION'] = $contact['VERSION'];
 			$this->addPhoto($changes, $imageType, base64_encode($socialdata));
@@ -213,8 +206,7 @@ class SocialApiService {
 			}
 
 			$addressBook->createOrUpdate($changes, $addressbookId);
-		}
-		catch (Exception $e) {
+		} catch (Exception $e) {
 			return new JSONResponse([], Http::STATUS_INTERNAL_SERVER_ERROR);
 		}
 		return new JSONResponse([], Http::STATUS_OK);

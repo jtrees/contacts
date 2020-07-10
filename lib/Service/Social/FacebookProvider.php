@@ -24,7 +24,6 @@
 namespace OCA\Contacts\Service\Social;
 
 class FacebookProvider implements ISocialProvider {
-
 	public function __construct() {
 	}
 	
@@ -51,5 +50,4 @@ class FacebookProvider implements ISocialProvider {
 		$connector = str_replace("{socialId}", $profileId, $recipe);
 		return $connector;
 	}
-	
 }

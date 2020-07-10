@@ -24,7 +24,6 @@
 namespace OCA\Contacts\Service\Social;
 
 class InstagramProvider implements ISocialProvider {
-
 	public function __construct() {
 	}
 	
@@ -73,7 +72,7 @@ class InstagramProvider implements ISocialProvider {
 			$result = file_get_contents($url, false, $context);
 
 			$jsonResult = json_decode($result,true);
-			$location = explode ('->' , $desired);
+			$location = explode('->' , $desired);
 			foreach ($location as $loc) {
 				if (!isset($jsonResult[$loc])) {
 					return null;
@@ -81,8 +80,7 @@ class InstagramProvider implements ISocialProvider {
 				$jsonResult = $jsonResult[$loc];
 			}
 			return $jsonResult;
-		}
-		catch (Exception $e) {
+		} catch (Exception $e) {
 			return null;
 		}
 	}

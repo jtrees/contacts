@@ -25,8 +25,7 @@ namespace OCA\Contacts\AppInfo;
 use OCP\AppFramework\App;
 
 class Application extends App {
-
-	const APP_ID = 'contacts';
+	public const APP_ID = 'contacts';
 
 	public function __construct() {
 		parent::__construct(self::APP_ID);
@@ -35,5 +34,4 @@ class Application extends App {
 	public const AVAIL_SETTINGS = [
 		'allowSocialSync' => 'yes',
 	];
-
 }
