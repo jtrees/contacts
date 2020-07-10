@@ -23,27 +23,25 @@
 
 namespace OCA\Contacts\Controller;
 
-use OCP\IConfig;
+use OCA\Contacts\AppInfo\Application;
+use OCA\Contacts\Service\SocialApiService;
 use OCP\AppFramework\ApiController;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
+use OCP\IConfig;
 use OCP\IRequest;
-
-use OCA\Contacts\Service\SocialApiService;
-use OCA\Contacts\AppInfo\Application;
-
 
 class SocialApiController extends ApiController {
 
 	/** @var IConfig */
-	private  $config;
-	/** @var SocialApiService */
-	private  $socialApiService;
+	private $config;
 
-	public function __construct(
-					IRequest $request,
-					IConfig $config,
-					SocialApiService $socialApiService) {
+	/** @var SocialApiService */
+	private $socialApiService;
+
+	public function __construct(IRequest $request,
+								IConfig $config,
+								SocialApiService $socialApiService) {
 		parent::__construct(Application::APP_ID, $request);
 
 		$this->config = $config;

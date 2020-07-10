@@ -23,9 +23,15 @@
 
 namespace OCA\Contacts\Service\Social;
 
+use OCP\Http\Client\IClientService;
+
 class MastodonProvider implements ISocialProvider {
 
-	public function __construct() {
+	/** @var IClientService */
+	private $httpClient;
+
+	public function __construct(IClientService $httpClient) {
+		$this->httpClient = $httpClient->NewClient();
 	}
 	
 	/**
@@ -38,11 +44,10 @@ class MastodonProvider implements ISocialProvider {
 	public function cleanupId(string $candidate):?string {
 		try {
 			if (strpos($candidate, '@') === 0) {
-				$user_server = explode ('@', $candidate);
+				$user_server = explode('@', $candidate);
 				$candidate = 'https://' . $user_server[2] . '/@' . $user_server[1];
 			}
-		}
-		catch (Exception $e) {
+		} catch (Exception $e) {
 			$candidate = null;
 		}
 		return $candidate;
@@ -57,24 +62,16 @@ class MastodonProvider implements ISocialProvider {
 	 */
 	public function getImageUrl(string $profileUrl):?string {
 		try {
-			$opts = [
-				"http" => [
-				"method" => "GET",
-				"header" => "User-Agent: Nextcloud Contacts App",
-				]
-			];
-			$context = stream_context_create($opts);
-			$result = file_get_contents($profileUrl, false, $context);
+			$result = $this->httpClient->get($profileUrl);
 
 			$htmlResult = new \DOMDocument();
-			$htmlResult->loadHTML($result);
+			$htmlResult->loadHTML($result->getBody());
 			$img = $htmlResult->getElementById('profile_page_avatar');
 			if (!is_null($img)) {
 				return $img->getAttribute("data-original");
 			}
 			return null;
-		}
-		catch (Exception $e) {
+		} catch (Exception $e) {
 			return null;
 		}
 	}

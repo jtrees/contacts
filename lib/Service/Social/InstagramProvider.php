@@ -23,9 +23,15 @@
 
 namespace OCA\Contacts\Service\Social;
 
+use OCP\Http\Client\IClientService;
+
 class InstagramProvider implements ISocialProvider {
 
-	public function __construct() {
+	/** @var IClientService */
+	private $httpClient;
+
+	public function __construct(IClientService $httpClient) {
+		$this->httpClient = $httpClient->NewClient();
 	}
 	
 	/**
@@ -35,7 +41,7 @@ class InstagramProvider implements ISocialProvider {
 	 *
 	 * @return string
 	 */
-	public function cleanupId(string $candidate):?string {
+	public function cleanupId(string $candidate):string {
 		return basename($candidate);
 	}
 
@@ -63,17 +69,10 @@ class InstagramProvider implements ISocialProvider {
 	 */
 	protected function getFromJson(string $url, string $desired) : ?string {
 		try {
-			$opts = [
-				"http" => [
-					"method" => "GET",
-					"header" => "User-Agent: Nextcloud Contacts App"
-				]
-			];
-			$context = stream_context_create($opts);
-			$result = file_get_contents($url, false, $context);
+			$result = $this->httpClient->get($url);
 
-			$jsonResult = json_decode($result,true);
-			$location = explode ('->' , $desired);
+			$jsonResult = json_decode($result->getBody(),true);
+			$location = explode('->' , $desired);
 			foreach ($location as $loc) {
 				if (!isset($jsonResult[$loc])) {
 					return null;
@@ -81,8 +80,7 @@ class InstagramProvider implements ISocialProvider {
 				$jsonResult = $jsonResult[$loc];
 			}
 			return $jsonResult;
-		}
-		catch (Exception $e) {
+		} catch (Exception $e) {
 			return null;
 		}
 	}

@@ -32,16 +32,14 @@ use OCP\L10N\IFactory;
 use OCA\Contacts\Service\SocialApiService;
 use ChristophWurst\Nextcloud\Testing\TestCase;
 
-
 class PageControllerTest extends TestCase {
-
 	private $controller;
 
 	/** @var IRequest|MockObject */
 	private $request;
 
 	/** @var IConfig|MockObject*/
-	private  $config;
+	private $config;
 
 	/** @var IInitialStateService|MockObject */
 	private $initialStateService;
@@ -50,7 +48,7 @@ class PageControllerTest extends TestCase {
 	private $languageFactory;
 
 	/** @var SocialApiService|MockObject*/
-	private  $socialApi;
+	private $socialApi;
 
 	public function setUp() {
 		parent::setUp();

@@ -32,10 +32,10 @@ class CompositeSocialProvider {
 	private $providers;
 
 	public function __construct(InstagramProvider $instagramProvider,
-					MastodonProvider $mastodonProvider,
-					FacebookProvider $facebookProvider,
-					TwitterProvider $twitterProvider,
-					TumblrProvider $tumblrProvider) {
+								MastodonProvider $mastodonProvider,
+								FacebookProvider $facebookProvider,
+								TwitterProvider $twitterProvider,
+								TumblrProvider $tumblrProvider) {
 
 		// This determines the priority of known providers
 		$this->providers = [
@@ -66,7 +66,6 @@ class CompositeSocialProvider {
 	 * @returns String the url to the requested information or null in case of errors
 	 */
 	public function getSocialConnector(array $socialEntries, string $network) : ?string {
-
 		$connector = null;
 		$selection = $this->providers;
 		// check if dedicated network selected
@@ -75,11 +74,10 @@ class CompositeSocialProvider {
 		}
 
 		// check selected providers in order
-		foreach($selection as $type => $socialProvider) {
+		foreach ($selection as $type => $socialProvider) {
 
 			// search for this network in user's profile
 			foreach ($socialEntries as $socialEntry) {
-
 				if (strtolower($type) === strtolower($socialEntry['type'])) {
 					$profileId = $socialProvider->cleanupId($socialEntry['value']);
 					if (!is_null($profileId)) {

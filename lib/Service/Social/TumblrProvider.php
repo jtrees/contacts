@@ -24,7 +24,6 @@
 namespace OCA\Contacts\Service\Social;
 
 class TumblrProvider implements ISocialProvider {
-
 	public function __construct() {
 	}
 	
@@ -55,5 +54,4 @@ class TumblrProvider implements ISocialProvider {
 		$connector = str_replace("{socialId}", $profileId, $recipe);
 		return $connector;
 	}
-	
 }
