@@ -41,7 +41,7 @@ class InstagramProvider implements ISocialProvider {
 	 *
 	 * @return string
 	 */
-	public function cleanupId(string $candidate):?string {
+	public function cleanupId(string $candidate):string {
 		return basename($candidate);
 	}
 

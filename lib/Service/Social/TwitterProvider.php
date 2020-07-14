@@ -41,7 +41,7 @@ class TwitterProvider implements ISocialProvider {
 	 *
 	 * @return string
 	 */
-	public function cleanupId(string $candidate):?string {
+	public function cleanupId(string $candidate):string {
 		$candidate = basename($candidate);
 		if ($candidate[0] === '@') {
 			$candidate = substr($candidate, 1);
